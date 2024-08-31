@@ -26,7 +26,7 @@
 #include "lstring.h"
 #include "ltable.h"
 #include "ltm.h"
-
+#include "lgeneric_gc.h"
 
 
 /*
@@ -222,6 +222,15 @@ static void init_registry (lua_State *L, global_State *g) {
 static void f_luaopen (lua_State *L, void *ud) {
   global_State *g = G(L);
   UNUSED(ud);
+  
+  // Reading other sources, luaM_error(L) is called
+  // to throw memory allocation error
+  //
+  // NOTE: Must be very first in here as after this
+  // other parts needs GC to be online for object allocations
+  if (!(g->gcState = generic_gc_state_new()))
+    luaM_error(L);
+  
   stack_init(L, L);  /* init stack */
   init_registry(L, g);
   luaS_init(L);
@@ -271,6 +280,8 @@ static void close_state (lua_State *L) {
   freestack(L);
   lua_assert(g->totalbytes == sizeof(LG));
   lua_assert(gettotalobjs(g) == 1);
+  
+  generic_gc_state_free(g->gcState);
   (*g->frealloc)(g->ud, fromstate(L), sizeof(LG), 0);  /* free main block */
 }
 

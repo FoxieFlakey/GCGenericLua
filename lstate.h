@@ -7,6 +7,7 @@
 #ifndef lstate_h
 #define lstate_h
 
+#include "lgeneric_gc.h"
 #include "lua.h"
 
 
@@ -317,6 +318,8 @@ typedef struct global_State {
   TString *strcache[STRCACHE_N][STRCACHE_M];  /* cache for strings in API */
   lua_WarnFunction warnf;  /* warning function */
   void *ud_warn;         /* auxiliary data to 'warnf' */
+  
+  generic_gc_state* gcState;
 } global_State;
 
 
